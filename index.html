@@ -3,431 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Search</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom scrollbar styling to fit the refined blue-gray aesthetic */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9; /* slate-100 */
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; /* slate-300 */
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; /* slate-400 */
-        }
-    </style>
+    <title>Paginated Search Engine</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4">
 
-    <!-- Top Navigation Header -->
-    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-4 shadow-xs">
-        <div class="max-w-6xl mx-auto flex items-center justify-between gap-4">
-            
-            <!-- Logo / Brand -->
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-blue-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="white" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
-                    </svg>
-                </div>
-                <div>
-                    <span class="text-lg font-extrabold tracking-wider text-slate-900">Trident Trust</span>
-                    <span class="text-xs font-semibold text-blue-600 block -mt-1 tracking-widest">Search</span>
-                </div>
-            </div>
-
-            <!-- Profile / System State Info -->
-            <div class="flex items-center gap-4">
-                <div class="hidden md:flex flex-col text-right">
-                    <span class="text-xs font-bold text-slate-400">Processed Documents</span>
-                    <span class="text-[10px] text-blue-600 font-mono font-bold tracking-tight">330,000</span>
-                </div>
-                <!-- <div class="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-600 text-sm cursor-pointer hover:bg-slate-200 transition">
-                    SYS
-                </div> -->
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <main class="max-w-6xl mx-auto px-4 md:px-6 py-10 space-y-6">
+    <div class="w-full max-w-2xl bg-slate-800 rounded-xl shadow-2xl p-8 border border-slate-700">
+        <h2 class="text-3xl font-extrabold text-white mb-6 tracking-tight">Product Search Engine</h2>
         
-        <!-- Large Interactive Search Section -->
-        <section class="space-y-4">
-            <div class="relative">
-                <input type="text" 
-                       id="search-input"
-                       placeholder="Enter search terms to begin..." 
-                       value=""
-                       class="w-full pl-16 pr-6 py-5 bg-white border border-slate-300 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-xl text-slate-900 shadow-sm placeholder-slate-400 font-medium">
-                <div class="absolute left-6 top-5 text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7 text-slate-400">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
-                    </svg>
-                </div>
-            </div>
+        <div class="relative">
+            <input 
+                type="text" 
+                id="search-box" 
+                placeholder="Start typing to search (min. 3 characters)..." 
+                autocomplete="off"
+                class="w-full px-5 py-4 text-lg bg-slate-900 border border-slate-600 rounded-lg shadow-inner text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+            >
+            
+            <div id="status" class="text-sm text-sky-400 mt-3 min-h-[20px] font-medium tracking-wide"></div>
+            
+            <ul 
+                id="results" 
+                class="mt-4 border border-slate-700 rounded-lg divide-y divide-slate-700 max-h-96 overflow-y-auto hidden bg-slate-900 shadow-xl"
+            ></ul>
 
-            <!-- Multi-Option Dropdown Filter Bar -->
-            <div class="flex flex-wrap items-center gap-3 bg-slate-200/50 p-3 rounded-xl border border-slate-300/60">
-                <span class="text-xs font-bold text-slate-500 tracking-wider uppercase pl-2">Quick Filters:</span>
-                
-                <!-- Filter 1: Document Type Dropdown -->
-                <div class="relative dropdown-container">
-                    <button type="button" onclick="toggleDropdown('doc-type-dropdown')" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition font-medium focus:outline-none shadow-xs">
-                        <span>Document Type</span>
-                        <span id="doc-type-count" class="hidden bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-slate-400">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                        </svg>
-                    </button>
-                    <!-- Dropdown Box -->
-                    <div id="doc-type-dropdown" class="hidden absolute left-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl p-4 space-y-3 z-40">
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Select Doc Types</span>
-                            <button onclick="clearCategory('doc-type-dropdown')" class="text-[10px] text-blue-600 hover:text-blue-800 transition font-medium underline">Clear</button>
-                        </div>
-                        <div class="space-y-2.5 max-h-48 overflow-y-auto">
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-600 hover:text-slate-900 transition">
-                                <input type="checkbox" value="Articles of Incorporation" onchange="handleFilterChange()" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                Articles of Incorporation
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-600 hover:text-slate-900 transition">
-                                <input type="checkbox" value="Operation Agreement" onchange="handleFilterChange()" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                Operation Agreement
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-600 hover:text-slate-900 transition">
-                                <input type="checkbox" value="Source of Funds" onchange="handleFilterChange()" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                Source of Funds
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-600 hover:text-slate-900 transition">
-                                <input type="checkbox" value="Passport" onchange="handleFilterChange()" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                Passport
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Filter 2: Client Name Dropdown -->
-                <div class="relative dropdown-container">
-                    <button type="button" onclick="toggleDropdown('client-dropdown')" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition font-medium focus:outline-none shadow-xs">
-                        <span>Client Name</span>
-                        <span id="client-count" class="hidden bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-slate-400">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                        </svg>
-                    </button>
-                    <!-- Dropdown Box -->
-                    <div id="client-dropdown" class="hidden absolute left-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl p-4 space-y-3 z-40">
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Select Clients</span>
-                            <button onclick="clearCategory('client-dropdown')" class="text-[10px] text-blue-600 hover:text-blue-800 transition font-medium underline">Clear</button>
-                        </div>
-                        <div class="space-y-2.5 max-h-48 overflow-y-auto">
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-600 hover:text-slate-900 transition">
-                                <input type="checkbox" value="Client A" checked onchange="handleFilterChange()" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                Client A
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-600 hover:text-slate-900 transition">
-                                <input type="checkbox" value="Client B" onchange="handleFilterChange()" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                Client B
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-600 hover:text-slate-900 transition">
-                                <input type="checkbox" value="Initech LLC" onchange="handleFilterChange()" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                Client C
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-600 hover:text-slate-900 transition">
-                                <input type="checkbox" value="Umbrella Corp" onchange="handleFilterChange()" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                Client D
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Filter 3: Recognised Entities Dropdown -->
-                <div class="relative dropdown-container">
-                    <button type="button" onclick="toggleDropdown('entity-dropdown')" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition font-medium focus:outline-none shadow-xs">
-                        <span>Recognised Entities</span>
-                        <span id="entity-count" class="hidden bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-slate-400">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                        </svg>
-                    </button>
-                    <!-- Dropdown Box -->
-                    <div id="entity-dropdown" class="hidden absolute left-0 mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-xl p-4 space-y-3 z-40">
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">NLP Entity Extractions</span>
-                            <button onclick="clearCategory('entity-dropdown')" class="text-[10px] text-blue-600 hover:text-blue-800 transition font-medium underline">Clear</button>
-                        </div>
-                        <div class="space-y-2.5 max-h-48 overflow-y-auto">
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-600 hover:text-slate-900 transition">
-                                <input type="checkbox" value="Trident Trust (ORG)" checked onchange="handleFilterChange()" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                <span>Trident Trust<span class="text-xs font-mono text-slate-400">(ORG)</span></span>
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-600 hover:text-slate-900 transition">
-                                <input type="checkbox" value="Mr. Smith (PERSON)" onchange="handleFilterChange()" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                <span>Mr. Smith<span class="text-xs font-mono text-slate-400">(PERSON)</span></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="h-6 w-px bg-slate-300 hidden md:block"></div>
-
-                <!-- Global Clear/Reset button -->
-                <button type="button" onclick="resetAllFilters()" class="text-xs font-bold text-slate-500 hover:text-blue-600 transition underline decoration-dotted underline-offset-4 ml-auto">
-                    Reset All Filters
+            <div 
+                id="pagination" 
+                class="mt-5 flex items-center justify-between border-t border-slate-700 pt-5 hidden"
+            >
+                <button 
+                    id="prev-btn" 
+                    disabled
+                    class="px-5 py-2.5 text-sm font-semibold text-slate-200 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600 hover:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition duration-150"
+                >
+                    Previous
+                </button>
+                <span id="page-num" class="text-sm font-bold text-slate-400 tracking-wider">Page 1</span>
+                <button 
+                    id="next-btn" 
+                    disabled
+                    class="px-5 py-2.5 text-sm font-semibold text-slate-200 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600 hover:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition duration-150"
+                >
+                    Next
                 </button>
             </div>
+        </div>
+    </div>
 
-            <!-- Active Selection Badges Wrapper -->
-            <div id="active-pills-container" class="flex flex-wrap items-center gap-2 pt-1">
-                <!-- Javascript will inject pills dynamically here -->
-            </div>
-        </section>
-
-        <!-- Search Results Count/Settings panel -->
-        <section class="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500 bg-white px-4 py-2.5 rounded-lg border border-slate-200">
-            <span id="results-meta">Query mapped in 0.08s — 3 high-confidence indexing matches shown</span>
-        </section>
-
-        <!-- Search Results List Area -->
-        <section class="space-y-4">
-
-            <!-- Result 1 -->
-            <article class="p-6 bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-xs transition duration-150 group">
-                <div class="flex items-center justify-between gap-4 mb-3 text-xs">
-                    <div class="flex items-center gap-2 text-slate-500">
-                        <span class="font-bold text-slate-700">Client A</span>
-                        <span class="text-slate-300">/</span>
-                        <span class="font-mono text-slate-500">Financials_Q4_Audited_v2.pdf</span>
-                    </div>
-                    <span class="px-2.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 text-[10px] font-bold uppercase tracking-wider">PDF Report</span>
-                </div>
-                
-                <h2 class="text-lg font-bold text-slate-900 group-hover:text-blue-600 cursor-pointer mb-2.5 transition">
-                    FY2025 Comprehensive Balance Sheet & Audited Fiscal Summary
-                </h2>
-                
-                <p class="text-slate-600 text-sm leading-relaxed mb-4">
-                    ...the operational analysis indicates that <mark class="bg-blue-50 text-blue-900 px-1 rounded font-medium">Acme Corp</mark> successfully consolidated all offshore units, resulting in a reported increase in yield. Total global gross revenue audited is verified at <mark class="bg-blue-50 text-blue-900 px-1 rounded font-medium">$42,300,000</mark> within key target territories, matching the required accounting guidelines evaluated in early...
-                </p>
-                
-                <!-- Entity Extraction Section -->
-                <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100 text-xs">
-                    <span class="text-slate-400 font-bold tracking-wider text-[10px] uppercase mr-1">Entities Parsed:</span>
-                    <span class="bg-slate-50 border border-slate-200 px-2.5 py-1 rounded text-slate-700 font-medium">
-                        <span class="text-blue-600 font-bold mr-1">ORG:</span>Client A
-                    </span>
-                    <span class="bg-slate-50 border border-slate-200 px-2.5 py-1 rounded text-slate-700 font-medium">
-                        <span class="text-blue-600 font-bold mr-1">MONEY:</span>$42.3 Million
-                    </span>
-                    <span class="bg-slate-50 border border-slate-200 px-2.5 py-1 rounded text-slate-700 font-medium">
-                        <span class="text-blue-600 font-bold mr-1">DATE:</span>FY2025
-                    </span>
-                </div>
-            </article>
-
-            <!-- Result 2 -->
-            <article class="p-6 bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-xs transition duration-150 group">
-                <div class="flex items-center justify-between gap-4 mb-3 text-xs">
-                    <div class="flex items-center gap-2 text-slate-500">
-                        <span class="font-bold text-slate-700">Client A</span>
-                        <span class="text-slate-300">/</span>
-                        <span class="font-mono text-slate-500">Liability.docx</span>
-                    </div>
-                    <span class="px-2.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold uppercase tracking-wider">PDF REPORT</span>
-                </div>
-                
-                <h2 class="text-lg font-bold text-slate-900 group-hover:text-blue-600 cursor-pointer mb-2.5 transition">
-                    Escalated Vendor Liabilities & Compensation Protocols
-                </h2>
-                
-                <p class="text-slate-600 text-sm leading-relaxed mb-4">
-                    ...the procedural framework states that vendor partners of <mark class="bg-blue-50 text-blue-900 px-1 rounded font-medium">Client A</mark> remain explicitly liable for latency offsets. In scenarios where data feeds fail to register before the daily system cut-off, compensatory settlements are estimated at <mark class="bg-blue-50 text-blue-900 px-1 rounded font-medium">$15,000</mark> per isolated outage incident...
-                </p>
-                
-                <!-- Entity Extraction Section -->
-                <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100 text-xs">
-                    <span class="text-slate-400 font-bold tracking-wider text-[10px] uppercase mr-1">Entities Parsed:</span>
-                    <span class="bg-slate-50 border border-slate-200 px-2.5 py-1 rounded text-slate-700 font-medium">
-                        <span class="text-blue-600 font-bold mr-1">ORG:</span>Client A
-                    </span>
-                    <span class="bg-slate-50 border border-slate-200 px-2.5 py-1 rounded text-slate-700 font-medium">
-                        <span class="text-blue-600 font-bold mr-1">MONEY:</span>$15,000
-                    </span>
-                </div>
-            </article>
-
-            <!-- Result 3 -->
-            <article class="p-6 bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-xs transition duration-150 group">
-                <div class="flex items-center justify-between gap-4 mb-3 text-xs">
-                    <div class="flex items-center gap-2 text-slate-500">
-                        <span class="font-bold text-slate-700">Client B</span>
-                        <span class="text-slate-300">/</span>
-                        <span class="font-mono text-slate-500">Equity_Amortization_Schedules.xlsx</span>
-                    </div>
-                    <span class="px-2.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold uppercase tracking-wider">PDF Report</span>
-                </div>
-                
-                <h2 class="text-lg font-bold text-slate-900 group-hover:text-blue-600 cursor-pointer mb-2.5 transition">
-                    Equity Amortization Matrix & Foreign Capital Distribution Schedules
-                </h2>
-                
-                <p class="text-slate-600 text-sm leading-relaxed mb-4">
-                    Analytical spreadsheet model addressing the foreign amortization targets for Client B asset holdings across offices situated in <mark class="bg-blue-50 text-blue-900 px-1 rounded font-medium">London, United Kingdom</mark>. The underlying workbook references fiscal projections alongside key performance variables designed by auditing teams...
-                </p>
-                
-                <!-- Entity Extraction Section -->
-                <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100 text-xs">
-                    <span class="text-slate-400 font-bold tracking-wider text-[10px] uppercase mr-1">Entities Parsed:</span>
-                    <span class="bg-slate-50 border border-slate-200 px-2.5 py-1 rounded text-slate-700 font-medium">
-                        <span class="text-blue-600 font-bold mr-1">GPE:</span>London, United Kingdom
-                    </span>
-                    <span class="bg-slate-50 border border-slate-200 px-2.5 py-1 rounded text-slate-700 font-medium">
-                        <span class="text-blue-600 font-bold mr-1">ORG:</span>Client B
-                    </span>
-                </div>
-            </article>
-            
-        </section>
-
-        <!-- Pagination & Result Scaling footer -->
-        <footer class="flex items-center justify-between pt-4 text-xs text-slate-500">
-            <button class="px-4 py-2 border border-slate-300 bg-white rounded-lg text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition disabled:opacity-50" disabled>
-                Previous Page
-            </button>
-            <span>Showing results 1 to 3 of 14 available matches</span>
-            <button class="px-4 py-2 border border-slate-300 bg-white rounded-lg text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition shadow-xs">
-                Next Page
-            </button>
-        </footer>
-
-    </main>
-
-    <!-- JavaScript logic to handle custom multi-option dropdown filter triggers -->
     <script>
-        // Toggle specific dropdown visibility
-        function toggleDropdown(id) {
-            const dropdown = document.getElementById(id);
-            const isHidden = dropdown.classList.contains('hidden');
-            
-            // Close other open dropdowns first
-            document.querySelectorAll('.dropdown-container > div').forEach(div => {
-                div.classList.add('hidden');
-            });
-            
-            if (isHidden) {
-                dropdown.classList.remove('hidden');
-            }
-        }
+        const searchBox = document.getElementById('search-box');
+        const resultsList = document.getElementById('results');
+        const statusMsg = document.getElementById('status');
+        const paginationDiv = document.getElementById('pagination');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const pageNumLabel = document.getElementById('page-num');
 
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.dropdown-container')) {
-                document.querySelectorAll('.dropdown-container > div').forEach(div => {
-                    div.classList.add('hidden');
-                });
+        let currentPage = 1;
+
+        searchBox.addEventListener('input', function() {
+            currentPage = 1; 
+            fetchResults();
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                fetchResults();
             }
         });
 
-        // Triggered every time any filter checkbox value is changed
-        function handleFilterChange() {
-            updateCounts();
-            renderActiveFilterPills();
-        }
+        nextBtn.addEventListener('click', () => {
+            currentPage++;
+            fetchResults();
+        });
 
-        // Recalculates selected values counts per dropdown category
-        function updateCounts() {
-            const categories = [
-                { id: 'doc-type-dropdown', countId: 'doc-type-count' },
-                { id: 'client-dropdown', countId: 'client-count' },
-                { id: 'entity-dropdown', countId: 'entity-count' }
-            ];
+        function fetchResults() {
+            const query = searchBox.value.trim();
 
-            categories.forEach(category => {
-                const container = document.getElementById(category.id);
-                const selectedCount = container.querySelectorAll('input[type="checkbox"]:checked').length;
-                const countBadge = document.getElementById(category.countId);
-
-                if (selectedCount > 0) {
-                    countBadge.textContent = selectedCount;
-                    countBadge.classList.remove('hidden');
-                } else {
-                    countBadge.classList.add('hidden');
-                }
-            });
-        }
-
-        // Dynamically creates interactive pill/badges representing active filters
-        function renderActiveFilterPills() {
-            const pillsContainer = document.getElementById('active-pills-container');
-            pillsContainer.innerHTML = ''; // Reset container
-
-            // Find all checked boxes in the page
-            const checkedBoxes = document.querySelectorAll('.dropdown-container input[type="checkbox"]:checked');
-
-            if (checkedBoxes.length > 0) {
-                // Label tag
-                const label = document.createElement('span');
-                label.className = 'text-xs text-slate-400 font-semibold mr-1';
-                label.textContent = 'Active filters:';
-                pillsContainer.appendChild(label);
-
-                // Build custom pill for each selected parameter
-                checkedBoxes.forEach(box => {
-                    const pill = document.createElement('div');
-                    pill.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-700 rounded-full shadow-xs animate-fade-in';
-                    
-                    const text = document.createElement('span');
-                    text.textContent = box.value;
-                    
-                    const removeBtn = document.createElement('button');
-                    removeBtn.className = 'text-blue-400 hover:text-blue-700 focus:outline-none ml-0.5';
-                    removeBtn.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                        </svg>
-                    `;
-                    // Uncheck option when clearing a pill
-                    removeBtn.onclick = function() {
-                        box.checked = false;
-                        handleFilterChange();
-                    };
-
-                    pill.appendChild(text);
-                    pill.appendChild(removeBtn);
-                    pillsContainer.appendChild(pill);
-                });
+            if (query.length < 3) {
+                resultsList.innerHTML = '';
+                resultsList.classList.add('hidden');
+                paginationDiv.classList.add('hidden');
+                statusMsg.textContent = query.length > 0 ? `Keep typing... (${3 - query.length} more characters needed)` : '';
+                statusMsg.className = "text-sm text-slate-400 mt-3 min-h-[20px] font-medium tracking-wide";
+                return;
             }
-        }
 
-        // Clear specific category checkboxes
-        function clearCategory(id) {
-            const container = document.getElementById(id);
-            container.querySelectorAll('input[type="checkbox"]').forEach(box => {
-                box.checked = false;
-            });
-            handleFilterChange();
-        }
+            statusMsg.textContent = 'Searching database...';
+            statusMsg.className = "text-sm text-blue-400 mt-3 min-h-[20px] font-medium tracking-wide animate-pulse";
 
-        // Global resets
-        function resetAllFilters() {
-            document.querySelectorAll('.dropdown-container input[type="checkbox"]').forEach(box => {
-                box.checked = false;
-            });
-            handleFilterChange();
+            fetch(`/search?q=${encodeURIComponent(query)}&page=${currentPage}`)
+                .then(response => response.json())
+                .then(data => {
+                    resultsList.innerHTML = '';
+                    
+                    if (data.results && data.results.length > 0) {
+                        data.results.forEach(item => {
+                            const li = document.createElement('li');
+                            li.textContent = item;
+                            // Uses bright blue backgrounds during item hover selection
+                            li.className = "px-5 py-3.5 text-slate-200 hover:bg-blue-600 hover:text-white transition duration-100 cursor-pointer";
+                            resultsList.appendChild(li);
+                        });
+                        
+                        resultsList.classList.remove('hidden');
+                        paginationDiv.classList.remove('hidden');
+                        statusMsg.textContent = '';
+                    } else {
+                        resultsList.classList.add('hidden');
+                        paginationDiv.classList.add('hidden');
+                        statusMsg.className = "text-sm text-slate-400 mt-3 min-h-[20px] font-medium tracking-wide";
+                        statusMsg.textContent = currentPage > 1 ? 'No further results found.' : 'No results found.';
+                    }
+                    
+                    // Update pagination UI numbers & buttons
+                    pageNumLabel.textContent = `Page ${data.page || currentPage}`;
+                    prevBtn.disabled = (currentPage === 1);
+                    nextBtn.disabled = !data.has_more;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    statusMsg.className = "text-sm text-red-400 mt-3 min-h-[20px] font-medium tracking-wide";
+                    statusMsg.textContent = 'Error loading results from server.';
+                });
         }
-
-        // Set baseline values when page compiles
-        window.onload = function() {
-            handleFilterChange();
-        };
     </script>
 </body>
 </html>
