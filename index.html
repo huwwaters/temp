@@ -78,56 +78,69 @@
             fetchResults();
         });
 
-        function fetchResults() {
-            const query = searchBox.value.trim();
+function fetchResults() {
+    const query = searchBox.value.trim();
 
-            if (query.length < 3) {
-                resultsList.innerHTML = '';
+    if (query.length < 3) {
+        resultsList.innerHTML = '';
+        resultsList.classList.add('hidden');
+        paginationDiv.classList.add('hidden');
+        statusMsg.textContent = query.length > 0 ? `Keep typing... (${3 - query.length} more characters needed)` : '';
+        statusMsg.className = "text-sm text-slate-400 mt-3 min-h-[20px] font-medium tracking-wide";
+        return;
+    }
+
+    statusMsg.textContent = 'Searching database...';
+    statusMsg.className = "text-sm text-blue-400 mt-3 min-h-[20px] font-medium tracking-wide animate-pulse";
+
+    fetch(`/search?q=${encodeURIComponent(query)}&page=${currentPage}`)
+        .then(response => response.json())
+        .then(data => {
+            resultsList.innerHTML = '';
+            
+            if (data.results && data.results.length > 0) {
+                data.results.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = "px-5 py-3.5 text-slate-200 hover:bg-blue-600 hover:text-white transition duration-100 cursor-pointer group";
+
+                    // Escape special RegEx characters to prevent injection issues in the UI
+                    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    
+                    // Match the term globally and case-insensitively
+                    const regex = new RegExp(`(${escapedQuery})`, 'gi');
+                    
+                    // Replace matched text with a Tailwind-styled span/mark
+                    // Using text-sky-400 for standard view, and text-white on hover
+                    const highlightedText = item.replace(
+                        regex, 
+                        `<span class="text-blue-400 font-bold group-hover:text-white underline decoration-2 decoration-blue-400/50 group-hover:decoration-white/50">$1</span>`
+                    );
+
+                    // Safely insert the HTML since we constructed the tags explicitly
+                    li.innerHTML = highlightedText;
+                    resultsList.appendChild(li);
+                });
+                
+                resultsList.classList.remove('hidden');
+                paginationDiv.classList.remove('hidden');
+                statusMsg.textContent = '';
+            } else {
                 resultsList.classList.add('hidden');
                 paginationDiv.classList.add('hidden');
-                statusMsg.textContent = query.length > 0 ? `Keep typing... (${3 - query.length} more characters needed)` : '';
                 statusMsg.className = "text-sm text-slate-400 mt-3 min-h-[20px] font-medium tracking-wide";
-                return;
+                statusMsg.textContent = currentPage > 1 ? 'No further results found.' : 'No results found.';
             }
-
-            statusMsg.textContent = 'Searching database...';
-            statusMsg.className = "text-sm text-blue-400 mt-3 min-h-[20px] font-medium tracking-wide animate-pulse";
-
-            fetch(`/search?q=${encodeURIComponent(query)}&page=${currentPage}`)
-                .then(response => response.json())
-                .then(data => {
-                    resultsList.innerHTML = '';
-                    
-                    if (data.results && data.results.length > 0) {
-                        data.results.forEach(item => {
-                            const li = document.createElement('li');
-                            li.textContent = item;
-                            // Uses bright blue backgrounds during item hover selection
-                            li.className = "px-5 py-3.5 text-slate-200 hover:bg-blue-600 hover:text-white transition duration-100 cursor-pointer";
-                            resultsList.appendChild(li);
-                        });
-                        
-                        resultsList.classList.remove('hidden');
-                        paginationDiv.classList.remove('hidden');
-                        statusMsg.textContent = '';
-                    } else {
-                        resultsList.classList.add('hidden');
-                        paginationDiv.classList.add('hidden');
-                        statusMsg.className = "text-sm text-slate-400 mt-3 min-h-[20px] font-medium tracking-wide";
-                        statusMsg.textContent = currentPage > 1 ? 'No further results found.' : 'No results found.';
-                    }
-                    
-                    // Update pagination UI numbers & buttons
-                    pageNumLabel.textContent = `Page ${data.page || currentPage}`;
-                    prevBtn.disabled = (currentPage === 1);
-                    nextBtn.disabled = !data.has_more;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    statusMsg.className = "text-sm text-red-400 mt-3 min-h-[20px] font-medium tracking-wide";
-                    statusMsg.textContent = 'Error loading results from server.';
-                });
-        }
+            
+            pageNumLabel.textContent = `Page ${data.page || currentPage}`;
+            prevBtn.disabled = (currentPage === 1);
+            nextBtn.disabled = !data.has_more;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            statusMsg.className = "text-sm text-red-400 mt-3 min-h-[20px] font-medium tracking-wide";
+            statusMsg.textContent = 'Error loading results from server.';
+        });
+}
     </script>
 </body>
 </html>
